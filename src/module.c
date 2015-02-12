@@ -122,6 +122,11 @@ module_fini_modules(module_t** modules, int n)
     BOOL MCTRL_API                                                            \
     mc##PublicName##_Initialize(void)                                         \
     {                                                                         \
+        /*PSIPHON*/                                                           \
+        /* DllMain contains necessary init code that won't get hit in a static\
+           lib, so call it explicitly.*/                                      \
+        DllMain(0, DLL_PROCESS_ATTACH, 0);                                    \
+        /*/PSIPHON*/                                                          \
         if(MC_ERR(module_init_modules(deps, MC_ARRAY_SIZE(deps)) != 0)) {     \
             MC_TRACE("mc%s_Initialize: module_init_modules() failed.",        \
                      MC_STRINGIZE(PublicName));                               \
@@ -134,6 +139,11 @@ module_fini_modules(module_t** modules, int n)
     mc##PublicName##_Terminate(void)                                          \
     {                                                                         \
         module_fini_modules(deps, MC_ARRAY_SIZE(deps));                       \
+        /*PSIPHON*/                                                           \
+        /* DllMain contains necessary init code that won't get hit in a static\
+           lib, so call it explicitly.*/                                      \
+        DllMain(0, DLL_PROCESS_DETACH, 0);                                    \
+        /*/PSIPHON*/                                                          \
     }
 
 

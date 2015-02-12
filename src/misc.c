@@ -291,6 +291,15 @@ setup_load_sys_dll(void)
 {
     HMODULE dll_kernel32;
 
+    /*PSIPHON*/
+    /* If we build using a PlatformToolset that supports WinXP (like 140_xp), 
+       then LOAD_LIBRARY_SEARCH_SYSTEM32 will not be defined. We'll copy the
+       definition of it here. It will run without a problem on XP.*/
+#ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
+#define LOAD_LIBRARY_SEARCH_SYSTEM32 0x00000800
+#endif
+    /*/PSIPHON*/
+
     /* Win 2000 does not have LoadLibraryEx(); Win XP does have LoadLibraryEx()
      * but it does not support LOAD_LIBRARY_SEARCH_SYSTEM32. */
     if(mc_win_version <= MC_WIN_XP)
@@ -589,7 +598,14 @@ mc_init_module(void)
                            IDR_GLYPHS), MC_BMP_GLYPH_W, 1, RGB(255,0,255));
     if(MC_ERR(mc_bmp_glyphs == NULL)) {
         MC_TRACE_ERR("mc_init_module: ImageList_LoadBitmap() failed");
-        return -1;
+
+        /*PSIPHON*/
+        /* Because we're creating a static lib rather than a DLL, its resources
+           won't be available. So we'll expect this to fail and just carry on.
+           If we end up needing these resources, we'll have to copy them to our 
+           project... or something. */
+        /*return -1;*/
+        /*/PSIPHON*/
     }
 
     /* Retrieve version of Windows and COMCTL32.DLL */

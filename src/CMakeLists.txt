@@ -4,7 +4,11 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 file(GLOB MCTRL_SOURCES "*.c" "*.h" "*.rc" "mCtrl.def")
 
-add_library(mCtrl SHARED ${MCTRL_SOURCES})
+#PSIPHON
+# Create a static lib rather than DLL
+#add_library(mCtrl SHARED ${MCTRL_SOURCES})
+add_library(mCtrl STATIC ${MCTRL_SOURCES})
+#/PSIPHON
 
 target_link_libraries(mCtrl gdi32 comctl32 ole32 oleaut32 uuid windowscodecs)
 

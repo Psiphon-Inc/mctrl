@@ -1,3 +1,15 @@
+## Psiphon notes
+
+To generate a project that will build with WinXP support, use a command line like this:
+
+```
+$ mkdir build
+$ cd build
+$ cmake -G "Visual Studio 14 2015" -T "v140_xp" ..
+```
+
+----
+
 
                       ====================================
                               mCtrl Project Readme
