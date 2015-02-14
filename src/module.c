@@ -181,7 +181,11 @@ DEFINE_PUBLIC_IFACE(expand, Expand, mod_expand_deps)
 static module_t* mod_grid_deps[] = { &mod_mc, &mod_theme, &mod_grid };
 DEFINE_PUBLIC_IFACE(grid, Grid, mod_grid_deps)
 
-static module_t* mod_html_deps[] = { &mod_mc, &mod_theme, &mod_html };
+/*PSIPHON*/
+/* Disable theming */
+/*static module_t* mod_html_deps[] = { &mod_mc, &mod_theme, &mod_html };*/
+static module_t* mod_html_deps[] = { &mod_mc, &mod_html };
+/*/PSIPHON*/
 DEFINE_PUBLIC_IFACE(html, Html, mod_html_deps)
 
 static module_t* mod_imgview_deps[] = { &mod_mc, &mod_xdraw, &mod_imgview };
