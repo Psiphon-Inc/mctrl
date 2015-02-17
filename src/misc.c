@@ -703,7 +703,12 @@ mc_tooltip_set_text(HWND parent, HWND tooltip, const TCHAR* str)
  *****************/
 
 BOOL WINAPI
-DllMain(HINSTANCE instance, DWORD reason, VOID* ignored)
+/*PSIPHON*/
+/* We're renaming this function to avoid conflict should we need convert any 
+   other libraries from dynamic to static. */
+/*DllMain(HINSTANCE instance, DWORD reason, VOID* ignored)*/
+mc_DllMain(HINSTANCE instance, DWORD reason, VOID* ignored)
+/*/PSIPHON*/
 {
     switch(reason) {
         case DLL_PROCESS_ATTACH:
@@ -744,6 +749,18 @@ DllMain(HINSTANCE instance, DWORD reason, VOID* ignored)
     return TRUE;
 }
 
+/*PSIPHON*/
+/* DllMain contains necessary init code that won't get hit in a static lib, so 
+   call it explicitly.*/
+void mc_StaticLibInitialize()
+{
+    mc_DllMain(0, DLL_PROCESS_ATTACH, 0);
+}
+void mc_StaticLibTerminate()
+{
+    mc_DllMain(0, DLL_PROCESS_DETACH, 0);
+}
+/*/PSIPHON*/
 
 /* Include the main public header file as we actually never do this elsewhere.
  * This at least verifies there is no compilation problem with it,

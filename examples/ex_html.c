@@ -236,6 +236,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     hInst = hInstance;
 
+    /* Initialize static form of mCtrl. */
+    mc_StaticLibInitialize();
     /* Register class of HTML control. */
     mcHtml_Initialize();
 
@@ -268,6 +270,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     }
 
     mcHtml_Terminate();
+    mc_StaticLibTerminate();
 
     /* Return exit code of WM_QUIT */
     return (int)msg.wParam;

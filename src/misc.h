@@ -480,9 +480,4 @@ void mc_tooltip_set_track_pos(HWND parent, HWND tooltip, int x, int y);
 /* Update the text of a tooltip */
 void mc_tooltip_set_text(HWND parent, HWND tooltip, const TCHAR* str);
 
-/*PSIPHON*/
-/* Exposing this so it can be called internally. */
-BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, VOID* ignored);
-/*/PSIPHON*/
-
 #endif  /* MC_MISC_H  */
