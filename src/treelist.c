@@ -991,9 +991,6 @@ treelist_paint(void* control, HDC dc, RECT* dirty, BOOL erase)
     cd.clrText = GetSysColor(COLOR_WINDOWTEXT);
     cd.clrTextBk = MC_CLR_NONE;
     cd_mode[0] = MC_SEND(tl->notify_win, WM_NOTIFY, cd.nmcd.hdr.idFrom, &cd);
-#ifndef CDRF_DOERASE  /* mingw-w64 missing this. Patch sent to them. */
-    #define CDRF_DOERASE 0x81
-#endif
     if(cd_mode[0] & (CDRF_SKIPDEFAULT | CDRF_DOERASE))
         goto skip_control_paint;
 
@@ -3450,7 +3447,7 @@ treelist_theme_changed(treelist_t* tl)
     tl->theme = mcOpenThemeData(tl->win, treelist_tc);
 
     if(!tl->no_redraw)
-        RedrawWindow(tl->win, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+        InvalidateRect(tl->win, NULL, TRUE);
 }
 
 static treelist_t*
@@ -3742,7 +3739,7 @@ treelist_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
             if(!tl->no_redraw) {
                 if(tl->dirty_scrollbars)
                     treelist_setup_scrollbars(tl);
-                RedrawWindow(win, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME);
+                InvalidateRect(win, NULL, TRUE);
             }
             return 0;
 
@@ -3760,7 +3757,7 @@ treelist_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
                 }
 
                 if(!tl->no_redraw)
-                    RedrawWindow(win, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME);
+                    InvalidateRect(win, NULL, TRUE);
             }
             break;
 

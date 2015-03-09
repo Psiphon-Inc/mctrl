@@ -53,13 +53,19 @@ imgview_paint_to_canvas(imgview_t* iv, xdraw_canvas_t* canvas,
     xdraw_canvas_begin_paint(canvas);
 
     if(erase) {
-#if 0
-        // TODO
-        if(iv->style & MC_IVS_TRANSPARENT)
-            mcDrawThemeParentBackground(iv->win, dc, dirty);
-        else
-#endif
+        if(iv->style & MC_IVS_TRANSPARENT) {
+            HDC dc;
+
+            dc = xdraw_canvas_acquire_dc(canvas, FALSE);
+            if(dc != NULL) {
+                mcDrawThemeParentBackground(iv->win, dc, dirty);
+                xdraw_canvas_release_dc(canvas, dc);
+            } else {
+                MC_TRACE("imgview_paint_to_canvas: xdraw_canvas_acquire_dc() failed.");
+            }
+        } else {
             xdraw_clear(canvas, XDRAW_COLORREF(GetSysColor(COLOR_WINDOW)));
+        }
     }
 
     if(iv->image != NULL) {
@@ -119,7 +125,7 @@ imgview_paint(imgview_t* iv)
 
     canvas = iv->canvas;
     if(canvas == NULL) {
-        canvas = xdraw_canvas_create_with_paintstruct(iv->win, &ps, FALSE);
+        canvas = xdraw_canvas_create_with_paintstruct(iv->win, &ps, XDRAW_CANVAS_GDICOMPAT);
         if(MC_ERR(canvas == NULL))
             goto no_paint;
     }
@@ -143,7 +149,7 @@ imgview_printclient(imgview_t* iv, HDC dc)
     xdraw_canvas_t* canvas;
 
     GetClientRect(iv->win, &rect);
-    canvas = xdraw_canvas_create_with_dc(dc, &rect);
+    canvas = xdraw_canvas_create_with_dc(dc, &rect, XDRAW_CANVAS_GDICOMPAT);
     if(MC_ERR(canvas == NULL))
         return;
     imgview_paint_to_canvas(iv, canvas, &rect, TRUE);
@@ -155,7 +161,7 @@ imgview_style_changed(imgview_t* iv, STYLESTRUCT* ss)
 {
     iv->style = ss->styleNew;
     if(!iv->no_redraw)
-        RedrawWindow(iv->win, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+        InvalidateRect(iv->win, NULL, TRUE);
 }
 
 static int
@@ -323,7 +329,7 @@ imgview_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
         case WM_SETREDRAW:
             iv->no_redraw = !wp;
             if(!iv->no_redraw)
-                RedrawWindow(win, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+                InvalidateRect(win, NULL, TRUE);
 
         case WM_GETDLGCODE:
             return DLGC_STATIC;

@@ -169,20 +169,10 @@
  *** Mingw-w64 compatibility hacks ***
  *************************************/
 
-/* <wingdi.h> misses this prototype */
-#ifdef MC_TOOLCHAIN_MINGW64
-    BOOL WINAPI __declspec(dllimport) GdiAlphaBlend(
-                            HDC dc1, int x1, int y1, int w1, int h1,
-                            HDC dc0, int x0, int y0, int w0, int h0,
-                            BLENDFUNCTION fn);
-#endif
-
-
 /* various missing constants */
 #ifndef TB_SETBOUNDINGSIZE
     #define TB_SETBOUNDINGSIZE      (WM_USER + 93)
 #endif
-
 #ifndef TB_SETPRESSEDIMAGELIST
     #define TB_SETPRESSEDIMAGELIST  (WM_USER + 104)
 #endif
@@ -222,19 +212,6 @@
     #define MC_HAVE_INTRIN_H
 #endif
 
-
-/* Same as memset() but for DWORD elements. */
-static inline void
-mc_stosd(uint32_t* dst, uint32_t val, size_t n)
-{
-#if defined MC_HAVE_INTRIN_H
-    __stosd((unsigned long*)dst, (unsigned long)val, n);
-#else
-    size_t i;
-    for(i = 0; i < n; i++)
-        dst[i] = val;
-#endif
-}
 
 /* CLZ (count leading zeros).
  * Note the result is undefined for val == 0.

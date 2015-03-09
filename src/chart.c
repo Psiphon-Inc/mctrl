@@ -2430,7 +2430,7 @@ chart_paint_with_ctx(chart_t* chart, chart_paint_t* ctx, RECT* dirty, BOOL erase
     chart_calc_layout(chart, &layout);
 
     /* Paint title */
-    if(!mc_rect_is_empty(&layout.title_rect) && mc_rect_overlaps_rect(dirty, &layout.title_rect)) {
+    if(!mc_rect_is_empty(&layout.title_rect)) {
         WCHAR title[256];
         xdraw_rect_t rc = { layout.title_rect.left, layout.title_rect.top,
                             layout.title_rect.right, layout.title_rect.bottom };
@@ -2442,47 +2442,44 @@ chart_paint_with_ctx(chart_t* chart, chart_paint_t* ctx, RECT* dirty, BOOL erase
     }
 
     /* Paint legend */
-    if(mc_rect_overlaps_rect(dirty, &layout.legend_rect))
-        chart_paint_legend(chart, ctx, &layout);
+    chart_paint_legend(chart, ctx, &layout);
 
     /* Paint the chart body */
-    if(mc_rect_overlaps_rect(dirty, &layout.body_rect)) {
-        DWORD type = (chart->style & MC_CHS_TYPEMASK);
-        switch(type) {
-            case MC_CHS_PIE:
-                pie_paint(chart, ctx, &layout);
-                break;
+    DWORD type = (chart->style & MC_CHS_TYPEMASK);
+    switch(type) {
+        case MC_CHS_PIE:
+            pie_paint(chart, ctx, &layout);
+            break;
 
-            case MC_CHS_SCATTER:
-                scatter_paint(chart, ctx, &layout);
-                break;
+        case MC_CHS_SCATTER:
+            scatter_paint(chart, ctx, &layout);
+            break;
 
-            case MC_CHS_LINE:
-            case MC_CHS_STACKEDLINE:
-            case MC_CHS_AREA:
-            case MC_CHS_STACKEDAREA:
-            {
-                BOOL is_stacked = (type == MC_CHS_STACKEDLINE  ||  type == MC_CHS_STACKEDAREA);
-                BOOL is_area = (type == MC_CHS_AREA  ||  type == MC_CHS_STACKEDAREA);
-                line_paint(chart, is_area, is_stacked, ctx, &layout);
-                break;
-            }
+        case MC_CHS_LINE:
+        case MC_CHS_STACKEDLINE:
+        case MC_CHS_AREA:
+        case MC_CHS_STACKEDAREA:
+        {
+            BOOL is_stacked = (type == MC_CHS_STACKEDLINE  ||  type == MC_CHS_STACKEDAREA);
+            BOOL is_area = (type == MC_CHS_AREA  ||  type == MC_CHS_STACKEDAREA);
+            line_paint(chart, is_area, is_stacked, ctx, &layout);
+            break;
+        }
 
-            case MC_CHS_COLUMN:
-            case MC_CHS_STACKEDCOLUMN:
-            {
-                BOOL is_stacked = (type == MC_CHS_STACKEDCOLUMN);
-                column_paint(chart, is_stacked, ctx, &layout);
-                break;
-            }
+        case MC_CHS_COLUMN:
+        case MC_CHS_STACKEDCOLUMN:
+        {
+            BOOL is_stacked = (type == MC_CHS_STACKEDCOLUMN);
+            column_paint(chart, is_stacked, ctx, &layout);
+            break;
+        }
 
-            case MC_CHS_BAR:
-            case MC_CHS_STACKEDBAR:
-            {
-                BOOL is_stacked = (type == MC_CHS_STACKEDBAR);
-                bar_paint(chart, is_stacked, ctx, &layout);
-                break;
-            }
+        case MC_CHS_BAR:
+        case MC_CHS_STACKEDBAR:
+        {
+            BOOL is_stacked = (type == MC_CHS_STACKEDBAR);
+            bar_paint(chart, is_stacked, ctx, &layout);
+            break;
         }
     }
 
@@ -2505,8 +2502,8 @@ chart_paint(chart_t* chart)
         ctx = chart->paint_ctx;
     } else {
         /* Initialize new context. */
-        xdraw_canvas_t* c = xdraw_canvas_create_with_paintstruct(chart->win,
-                                    &ps, (chart->style & MC_CHS_DOUBLEBUFFER));
+        xdraw_canvas_t* c = xdraw_canvas_create_with_paintstruct(chart->win, &ps,
+                (chart->style & MC_CHS_DOUBLEBUFFER) ? XDRAW_CANVAS_DOUBLEBUFER : 0);
         if(MC_ERR(c == NULL))
             goto no_paint;
         chart_paint_ctx_init(&tmp_ctx, c, chart->font);
@@ -2547,7 +2544,7 @@ chart_printclient(chart_t* chart, HDC dc)
 
     GetClientRect(chart->win, &rect);
 
-    c = xdraw_canvas_create_with_dc(dc, &rect);
+    c = xdraw_canvas_create_with_dc(dc, &rect, 0);
     if(c == NULL)
         return;
 
@@ -2624,7 +2621,7 @@ chart_hit_test(chart_t* chart, int x, int y, int* set_ix, int* i)
         xdraw_canvas_t* c;
 
         GetClientRect(chart->win, &rect);
-        c = xdraw_canvas_create_with_dc(GetDCEx(NULL, NULL, DCX_CACHE), &rect);
+        c = xdraw_canvas_create_with_dc(GetDCEx(NULL, NULL, DCX_CACHE), &rect, 0);
         if(MC_ERR(c == NULL)) {
             MC_TRACE("chart_hit_test: xdraw_canvas_create_with_dc() failed.");
             *set_ix = -1;
@@ -3127,7 +3124,7 @@ chart_style_changed(chart_t* chart, STYLESTRUCT* ss)
 
     chart_setup_hot(chart);
     if(!chart->no_redraw)
-        RedrawWindow(chart->win, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+        InvalidateRect(chart->win, NULL, TRUE);
 }
 
 static chart_t*
@@ -3282,7 +3279,6 @@ chart_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
         case MC_CHM_GETTOOLTIPS:
             return (LRESULT) chart->tooltip_win;
 
-
         case MC_CHM_GETAXISLEGENDW:
         case MC_CHM_GETAXISLEGENDA:
             /* TODO */
@@ -3291,8 +3287,7 @@ chart_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
         case MC_CHM_SETAXISLEGENDW:
         case MC_CHM_SETAXISLEGENDA:
             return chart_set_axis_legend(chart, wp, (void*)lp,
-                                         (msg == MC_CHM_SETDATASETLEGENDW));
-
+                                         (msg == MC_CHM_SETAXISLEGENDW));
 
         case WM_SETTEXT:
         {
@@ -3317,7 +3312,7 @@ chart_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
         case WM_SETREDRAW:
             chart->no_redraw = !wp;
             if(!chart->no_redraw)
-                RedrawWindow(win, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+                InvalidateRect(win, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
             return 0;
 
         case WM_GETDLGCODE:
@@ -3330,7 +3325,7 @@ chart_proc(HWND win, UINT msg, WPARAM wp, LPARAM lp)
 
         case WM_SYSCOLORCHANGE:
             if(!chart->no_redraw)
-                RedrawWindow(win, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_ERASE);
+                InvalidateRect(win, NULL, TRUE);
             break;
 
         case CCM_SETNOTIFYWINDOW:
