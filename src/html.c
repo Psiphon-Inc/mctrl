@@ -1417,9 +1417,19 @@ static BOOL
 html_key_msg(html_t* html, UINT msg, WPARAM wp, LPARAM lp)
 {
     /*PSIPHON*/
-    /* Cheap hack to disable hotkeys, like F5 (refresh) and Alt+Left (back).
-       TODO: Do this better. */
-    return FALSE;
+    /* We want to disable some hotkeys, like F5 (refresh) and Alt+Left (back),
+    which interfere with the functioning of the web UI. */
+    /* TODO: "Back" can also be triggered by backspace if focus is not in a text box.
+             Can we check for that? Is there a better way? */
+    if (wp == VK_LEFT && GetKeyState(VK_MENU)) {
+        /* ALT+LEFT is "back" */
+        return FALSE;
+    }
+    else if (wp == VK_F5 || (wp == 'R' && GetKeyState(VK_CONTROL)))
+    {
+        /* F5 and CTRL+R are "refresh" */
+        return FALSE;
+    }
     /*/PSIPHON*/
 
     DWORD pos;
