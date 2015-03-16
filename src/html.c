@@ -1420,17 +1420,22 @@ static BOOL
 html_key_msg(html_t* html, UINT msg, WPARAM wp, LPARAM lp)
 {
     /*PSIPHON*/
-    /* We want to disable some hotkeys, like F5 (refresh) and Alt+Left (back),
-    which interfere with the functioning of the web UI. */
-    /* TODO: "Back" can also be triggered by backspace if focus is not in a text box.
-             Can we check for that? Is there a better way? */
-    if (wp == VK_LEFT && GetKeyState(VK_MENU)) {
-        /* ALT+LEFT is "back" */
-        return FALSE;
-    }
-    else if (wp == VK_F5 || (wp == 'R' && GetKeyState(VK_CONTROL)))
-    {
-        /* F5 and CTRL+R are "refresh" */
+    /* We want to disable the hotkeys that interfere with the illusion that the
+       web control is an app UI, like F5 (refresh), Alt+Left (back), Ctrl+P (print),
+       Ctrl+F (find), Ctrl+L and Alt+D (open location), and so on. But we also
+       want to allow keys that are needed for input, like Tab and Backspace.
+       There are (probably) too many undesirable hotkeys to blacklist just those.
+       So instead we are going to whitelist the keys that we want/need and reject
+       the rest.
+     */
+    if (!(wp == VK_TAB) &&
+        !(wp == VK_BACK) &&
+        !(wp == VK_DELETE) &&
+        !(wp == 'V' && GetKeyState(VK_CONTROL)) && 
+        !(wp == 'C' && GetKeyState(VK_CONTROL)) && 
+        !(wp == 'X' && GetKeyState(VK_CONTROL)) &&
+        !(wp == 'Z' && GetKeyState(VK_CONTROL))
+        ) {
         return FALSE;
     }
     /*/PSIPHON*/
