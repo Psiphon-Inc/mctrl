@@ -1427,8 +1427,10 @@ html_key_msg(html_t* html, UINT msg, WPARAM wp, LPARAM lp)
        There are (probably) too many undesirable hotkeys to blacklist just those.
        So instead we are going to whitelist the keys that we want/need and reject
        the rest.
+       Only intercepting WM_KEYDOWN events allows JS keypress events to get through.
      */
-    if (!(wp == VK_TAB) &&
+    if (msg == WM_KEYDOWN &&
+        !(wp == VK_TAB) &&
         !(wp == VK_BACK) &&
         !(wp == VK_DELETE) &&
         !(wp == 'V' && GetKeyState(VK_CONTROL)) && 
